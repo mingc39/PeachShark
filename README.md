@@ -57,6 +57,8 @@ A1의 6 ~ 7 채널은 기존의 A1의 0 ~ 1 채널이 좌우 변경 없이 그�
 
 Voicemeeter Banana에서 작동되도록 만들어진 프로그램으로 일반 Voicemeeter, Voicemeeter Potato에서는 올바르게 작동하지 않을 수 있습니다.
 
+32비트에서는 정상작동하지 않을 수 있습니다.
+
 프로그램 아이콘은 mrlimeshark가 그려주었습니다!
 
 ![icon](https://raw.githubusercontent.com/mingc39/PeachShark/main/VoiceMeeterAddon/image.ico)
