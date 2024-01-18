@@ -116,11 +116,31 @@ DWORD loadRegTray() {
     return value;
 }
 
+DWORD loadRegDelay() {
+    HKEY hkey;
+    DWORD value, size = sizeof(DWORD);
+    if (RegOpenKey(HKEY_CURRENT_USER, L"Software\\VoiceMeeterAddon\\peach", &hkey) != ERROR_SUCCESS) return 0xFF;
+    if (RegGetValue(hkey, NULL, L"Delay", RRF_RT_DWORD | RRF_ZEROONFAILURE, NULL, &value, &size) != ERROR_SUCCESS) {
+        RegCloseKey(hkey);
+        return 0xFF;
+    }
+    RegCloseKey(hkey);
+    return value;
+}
+
 void setRegTray(DWORD value) {
     HKEY hkey;
     // 키를 열어보고 없으면 생성
     if (RegOpenKey(HKEY_CURRENT_USER, L"Software\\VoiceMeeterAddon\\peach", &hkey) != ERROR_SUCCESS) RegCreateKey(HKEY_CURRENT_USER, L"Software\\VoiceMeeterAddon\\peach", &hkey);
     RegSetValueEx(hkey, L"SystemTray", 0, REG_DWORD, (LPBYTE)&value, sizeof(DWORD));
+    RegCloseKey(hkey);
+}
+
+void setRegDelay(DWORD value) {
+    HKEY hkey;
+    // 키를 열어보고 없으면 생성
+    if (RegOpenKey(HKEY_CURRENT_USER, L"Software\\VoiceMeeterAddon\\peach", &hkey) != ERROR_SUCCESS) RegCreateKey(HKEY_CURRENT_USER, L"Software\\VoiceMeeterAddon\\peach", &hkey);
+    RegSetValueEx(hkey, L"Delay", 0, REG_DWORD, (LPBYTE)&value, sizeof(DWORD));
     RegCloseKey(hkey);
 }
 
@@ -351,6 +371,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 //InvalidateRect(hWnd, NULL, FALSE);
                 for (int i = 0; i < 8; i++) CheckRadioButton(hWnd, 21000 + 20 * i, 21010 + 20 * i + 9, audioSetting[i] == -1 ? 21000 + 20 * i : 21010 + 20 * i + audioSetting[i]);
                 break;
+            case 32775:
+                menuItemInfo.cbSize = sizeof(MENUITEMINFO);
+                menuItemInfo.fMask = MIIM_STATE;
+                GetMenuItemInfo(GetMenu(hWnd), 32775, FALSE, &menuItemInfo);
+                if (menuItemInfo.fState == MFS_CHECKED) {
+                    CheckMenuItem(GetMenu(hWnd), 32775, MF_UNCHECKED);
+                    setRegDelay(0x00);
+                }
+                else if (menuItemInfo.fState == MFS_UNCHECKED) {
+                    CheckMenuItem(GetMenu(hWnd), 32775, MF_CHECKED);
+                    CheckMenuItem(GetMenu(hWnd), 32776, MF_UNCHECKED);
+                    setRegDelay(0x05);
+                }
+                break;
+            case 32776:
+                menuItemInfo.cbSize = sizeof(MENUITEMINFO);
+                menuItemInfo.fMask = MIIM_STATE;
+                GetMenuItemInfo(GetMenu(hWnd), 32776, FALSE, &menuItemInfo);
+                if (menuItemInfo.fState == MFS_CHECKED) {
+                    CheckMenuItem(GetMenu(hWnd), 32776, MF_UNCHECKED);
+                    setRegDelay(0x00);
+                }
+                else if (menuItemInfo.fState == MFS_UNCHECKED) {
+                    CheckMenuItem(GetMenu(hWnd), 32776, MF_CHECKED);
+                    CheckMenuItem(GetMenu(hWnd), 32775, MF_UNCHECKED);
+                    setRegDelay(0x0A);
+                }
+                break;
             case IDM_ABOUT:
                 DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
                 break;
@@ -386,6 +434,44 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             else systemTray = FALSE;
 
+            DWORD delay = loadRegDelay();
+            if (delay == 0x05) {
+                CheckMenuItem(GetMenu(hWnd), 32775, MF_CHECKED);
+            }
+            else if (delay == 0x0A) {
+                CheckMenuItem(GetMenu(hWnd), 32776, MF_CHECKED);
+            }
+            else delay = 0x00;
+
+
+            // 트레이 아이콘
+            ZeroMemory(&nid, sizeof(nid));
+            nid.cbSize = sizeof(nid);
+            nid.hWnd = hWnd;
+            nid.uFlags = NIF_TIP | NIF_ICON | NIF_MESSAGE;
+            nid.uCallbackMessage = WM_TRAY_DOUBLE_CLICK;
+            nid.hIcon = icon;
+            lstrcpy(nid.szTip, L"트레이아이콘");
+            Shell_NotifyIcon(NIM_ADD, &nid);
+
+
+            // 지연 시작
+            // 실행 인수로 "-delay"가 주어진 경우에만 지연실행
+            if (delay != 0) {
+                LPWSTR* szArglist;
+                int nArgs;
+                szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+                if (szArglist != NULL) {
+                    for (int i = 0; i < nArgs; i++) {
+                        if (wcscmp(L"-delay", szArglist[i]) == 0) {
+                            Sleep(delay * 1000);
+                            break;
+                        }
+                    }
+                }
+            }
+
+
             // VoiceMeeter DLL 로드
             vmlib = LoadLibrary(L"C:\\Program Files (x86)\\VB\\Voicemeeter\\VoicemeeterRemote64.dll");
             //vmlib = LoadLibrary("VoicemeeterRemote64.dll"); //64비트
@@ -420,7 +506,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
 
             // 뭔지 모름 없어도 될것 같기도 한데....
-            voicemeeter.VBVMR_IsParametersDirty();
+            //voicemeeter.VBVMR_IsParametersDirty();
             
             // Voicemeeter 오디오 콜백 등록
             char aaaa[64] = "aaaa";
@@ -430,17 +516,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             voicemeeter.VBVMR_AudioCallbackStart();
 
-            // 트레이 아이콘
-            ZeroMemory(&nid, sizeof(nid));
-            nid.cbSize = sizeof(nid);
-            nid.hWnd = hWnd;
-            nid.uFlags = NIF_TIP | NIF_ICON | NIF_MESSAGE;
-            nid.uCallbackMessage = WM_TRAY_DOUBLE_CLICK;
-            nid.hIcon = icon;
-            lstrcpy(nid.szTip, L"트레이아이콘");
-            Shell_NotifyIcon(NIM_ADD, &nid);
 
-            
         }
         break;
     case WM_TRAY_DOUBLE_CLICK:
