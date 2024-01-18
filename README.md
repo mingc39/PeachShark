@@ -13,10 +13,13 @@ Peach Shark는 보이스미터의 여러 2채널 사운드 출력을 하나의 8
 Voicemeeter가 반드시 필요합니다.
 
 Voicemeeter Banana는 Voicemeeter 웹페이지에서 찾을 수 있습니다.
+
 https://vb-audio.com/Voicemeeter/banana.htm
 
 Voicemeeter, Voicemeeter Banana는 Peach Shark를 사용해주세요.
+
 Voicemeeter Potato는 Peach Shark Pro를 사용해주세요.
+
 단, Voicemeeter에서 Peach Shark 사용 시 Voicemeeter Banana 용 기능은 작동하지 않으며 오디오 버스 이름이 Voicemeeter Banana 기준으로 표시됩니다.
 
 사운드카드를 멀티채널(4~7.1)로 설정하고 스피커를 연결합니다.
@@ -42,6 +45,7 @@ ch0,1 ~ ch6,7은 A1의 채널입니다.
 컴퓨터 시작시 자동으로 실행되도록 하려면 Peach Shark를 시작프로그램으로 등록하세요.
 
 시작프로그램으로 실행시 Voicemeeter보다 먼저 켜져 정상 작동하지 않는 경우에는 지연 시작 기능을 사용하세요.
+
 파일 메뉴에서 지연 시작 시간 선택 후 -delay 인자를 추가하여 실행 시 해당 시간동안 대기 후 PeachShark를 시작합니다.
 
 # 사용 예시
@@ -63,8 +67,11 @@ A1의 6 ~ 7 채널은 기존의 A1의 0 ~ 1 채널이 좌우 변경 없이 그�
 # 주의사항
 
 Voicemeeter, Voicemeeter Banana: PeachShark 사용
+
 Voicemeeter Potato: PeachShark Pro 사용
+
 PeachShark와 PeachShark Pro를 반대로 사용할 경우 정상작동하지 않을 수 있습니다.
+
 Voicemeeter에서 PeachShark 사용 시 PeachShark의 A1과 A2가 각각 Voicemeeter의 A와 B입니다. PeachShark의 A3, B1, B2는 사용되지 않습니다.
 
 32비트에서는 정상작동하지 않을 수 있습니다.
