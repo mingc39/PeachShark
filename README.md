@@ -37,6 +37,9 @@ ch0,1 ~ ch6,7은 A1의 채널입니다.
 
 컴퓨터 시작시 자동으로 실행되도록 하려면 Peach Shark를 시작프로그램으로 등록하세요.
 
+시작프로그램으로 실행시 Voicemeeter보다 먼저 켜져 정상 작동하지 않는 경우에는 지연 시작 기능을 사용하세요.
+파일 메뉴에서 지연 시작 시간 선택 후 -delay 인자를 추가하여 실행시 해당 시간동안 대기 후 PeachShark를 시작합니다.
+
 # 사용 예시
 
 ![image2](https://raw.githubusercontent.com/mingc39/PeachShark/main/image2.png)
@@ -55,7 +58,10 @@ A1의 6 ~ 7 채널은 기존의 A1의 0 ~ 1 채널이 좌우 변경 없이 그�
 
 # 주의사항
 
-Voicemeeter Banana에서 작동되도록 만들어진 프로그램으로 일반 Voicemeeter, Voicemeeter Potato에서는 올바르게 작동하지 않을 수 있습니다.
+Voicemeeter, Voicemeeter Banana: PeachShark 사용
+Voicemeeter Potato: PeachShark Pro 사용
+PeachShark와 PeachShark Pro를 반대로 사용할 경우 정상작동하지 않을 수 있습니다.
+Voicemeeter에서 PeachShark 사용 시 PeachShark의 A1과 A2가 각각 Voicemeeter의 A와 B입니다. PeachShark의 A3, B1, B2는 사용되지 않습니다.
 
 32비트에서는 정상작동하지 않을 수 있습니다.
 
