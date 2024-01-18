@@ -72,14 +72,14 @@ BOOL saveConfig(int* config, int size) {
     HANDLE configFile;
     char buf[64] = { 0, };
 
-    if (size < sizeof(int) * 8) return false;
+    if (size < sizeof(int) * 11) return false;
 
     // 파일 열기
     configFile = CreateFile(L"peach.cfg", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
     if (configFile == INVALID_HANDLE_VALUE) return false;
 
     // 파일 쓰기
-    sprintf_s(buf, "%d %d %d %d %d %d %d %d", config[0], config[1], config[2], config[3], config[4], config[5], config[6], config[7]);
+    sprintf_s(buf, "%d %d %d %d %d %d %d %d %d %d %d", config[0], config[1], config[2], config[3], config[4], config[5], config[6], config[7], config[8], config[9], config[10]);
     WriteFile(configFile, buf, sizeof(buf), NULL, NULL);
 
     CloseHandle(configFile);
@@ -90,7 +90,7 @@ BOOL loadConfig(int* config, int size) {
     HANDLE configFile;
     char buf[64] = { 0, };
 
-    if (size < sizeof(int) * 8) return false;
+    if (size < sizeof(int) * 11) return false;
 
     // 파일 열기
     configFile = CreateFile(L"peach.cfg", GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
@@ -98,7 +98,7 @@ BOOL loadConfig(int* config, int size) {
 
     // 파일 읽기
     ReadFile(configFile, buf, sizeof(buf), NULL, NULL);
-    sscanf_s(buf, "%d %d %d %d %d %d %d %d", config + 0, config + 1, config + 2, config + 3, config + 4, config + 5, config + 6, config + 7);
+    sscanf_s(buf, "%d %d %d %d %d %d %d %d %d %d %d", config + 0, config + 1, config + 2, config + 3, config + 4, config + 5, config + 6, config + 7, config + 8, config + 9, config + 10);
 
     CloseHandle(configFile);
     return true;
@@ -190,7 +190,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    //strcpy_s(a2, "PeachShark");
    //HWND hWnd = CreateWindowA(a1, a2, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-      CW_USEDEFAULT, 0, 350, 255, nullptr, nullptr, hInstance, nullptr);
+      CW_USEDEFAULT, 0, 500, 315, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
@@ -238,8 +238,8 @@ long __stdcall audioCallback(void* lpUser, long nCommand, void* lpData, long nnn
             // 그대로 통과
             if (audst == NULL) t = -1;
             else t = audst[i];
-            if (t < -1 || t > 9) t = -1;
-            if (buffer->audiobuffer_nbi == 16 && t >= 4) t = -1;
+            if (t < -1 || t > 15) t = -1;
+            //if (buffer->audiobuffer_nbi == 16 && t >= 4) t = -1;
             if (t == -1) {
                 in = buffer->audiobuffer_r[2 * i];
                 inr = buffer->audiobuffer_r[2 * i + 1];
@@ -260,11 +260,11 @@ long __stdcall audioCallback(void* lpUser, long nCommand, void* lpData, long nnn
             }
             for (int j = 0; j < buffer->audiobuffer_nbs; j++) { out[j] = in[j]; outr[j] = inr[j]; }
         }
-        for (int i = 4; i < 8; i++) {
-            if (buffer->audiobuffer_nbi == 16 && i > 4) break;
+        for (int i = 4; i < 11; i++) {
+            //if (buffer->audiobuffer_nbi == 16 && i > 4) break;
             if (audst == NULL) t = -1;
             else t = audst[i];
-            if (t < -1 || t > 9) t = -1;
+            if (t < -1 || t > 15) t = -1;
             if (buffer->audiobuffer_nbi == 16 && t >= 4) t = -1;
             if (t == -1) {
                 in = buffer->audiobuffer_r[8 * (i - 3)];
@@ -327,10 +327,11 @@ long __stdcall audioCallback(void* lpUser, long nCommand, void* lpData, long nnn
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static int audioSetting[8];
-    static HWND rbutton[8][11];
+    static int audioSetting[11];
+    static HWND rbutton[11][17];
     static NOTIFYICONDATA nid;
     //static char str[256] = { 0, };
+    //static TCHAR wstr[256] = { 0, };
     switch (message)
     {
     case WM_COMMAND:
@@ -338,14 +339,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             int wmId = LOWORD(wParam);
             MENUITEMINFO menuItemInfo = { 0 };
             // 메뉴 선택을 구문 분석합니다:
-            if (21000 <= wmId && wmId < 21200) {
+            if (21000 <= wmId && wmId < 22000) {
                 int i, j;
                 i = wmId - 21000;
-                if (i % 20 == 0) j = -1;
-                else j = i % 10;
-                i = i / 20;
-                if (0 <= i && i < 8) audioSetting[i] = j;
-                //sprintf_s(str, "%d %d     ", i, j);
+                if (i % 32 == 0) j = -1;
+                else j = i % 16;
+                i = i / 32;
+                if (0 <= i && i < 11) audioSetting[i] = j;
+                //wsprintf(wstr, L"%d: %d %d     ", wmId, i, j);
                 //InvalidateRect(hWnd, NULL, FALSE);
             }
             switch (wmId)
@@ -369,9 +370,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
             case 32771: // 설정 불러오기 메뉴
                 if (loadConfig(audioSetting, sizeof(audioSetting)) == false) break;
-                //sprintf_s(str, "%d %d %d %d %d %d %d %d", audioSetting[0], audioSetting[1], audioSetting[2], audioSetting[3], audioSetting[4], audioSetting[5], audioSetting[6], audioSetting[7]);
+                //wsprintf(wstr, L"aaaa %d %d %d %d %d %d %d %d %d %d %d", audioSetting[0], audioSetting[1], audioSetting[2], audioSetting[3], audioSetting[4], audioSetting[5], audioSetting[6], audioSetting[7], audioSetting[8], audioSetting[9], audioSetting[10]);
                 //InvalidateRect(hWnd, NULL, FALSE);
-                for (int i = 0; i < 8; i++) CheckRadioButton(hWnd, 21000 + 20 * i, 21010 + 20 * i + 9, audioSetting[i] == -1 ? 21000 + 20 * i : 21010 + 20 * i + audioSetting[i]);
+                for (int i = 0; i < 11; i++) CheckRadioButton(hWnd, 21000 + 32 * i, 21016 + 32 * i + 15, audioSetting[i] == -1 ? 21000 + 32 * i : 21016 + 32 * i + audioSetting[i]);
                 break;
             case 32775:
                 menuItemInfo.cbSize = sizeof(MENUITEMINFO);
@@ -415,18 +416,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
         {
             // audioSetting 초기화
-            if(loadConfig(audioSetting, sizeof(audioSetting)) == false) for (int i = 0; i < 8; i++) audioSetting[i] = -1;
-            for (int i = 0; i < 8; i++) if(audioSetting[i] < -1 || audioSetting[i] > 9) audioSetting[i] = -1;
+            if(loadConfig(audioSetting, sizeof(audioSetting)) == false) for (int i = 0; i < 11; i++) audioSetting[i] = -1;
+            for (int i = 0; i < 11; i++) if(audioSetting[i] < -1 || audioSetting[i] > 15) audioSetting[i] = -1;
 
             // 라디오 버튼 생성
-            for (int i = 0; i < 8; i++) {
-                rbutton[i][0] = CreateWindow(L"button", L"", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 60, 30 + 20 * i, 20, 20, hWnd, (HMENU) (21000 + 20 * i), hInst, NULL);
-                for (int j = 0; j < 5; j++) {
-                    rbutton[i][2 * j + 1] = CreateWindow(L"button", L"", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON ,  90 + 50 * j, 30 + 20 * i, 20, 20, hWnd, (HMENU) (21010 + 20 * i + 2 * j)    , hInst, NULL);
-                    rbutton[i][2 * j + 2] = CreateWindow(L"button", L"", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON , 110 + 50 * j, 30 + 20 * i, 20, 20, hWnd, (HMENU) (21010 + 20 * i + 2 * j + 1), hInst, NULL);
+            for (int i = 0; i < 11; i++) {
+                rbutton[i][0] = CreateWindow(L"button", L"", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP, 60, 30 + 20 * i, 20, 20, hWnd, (HMENU) (21000 + 32 * i), hInst, NULL);
+                for (int j = 0; j < 8; j++) {
+                    rbutton[i][2 * j + 1] = CreateWindow(L"button", L"", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON ,  90 + 50 * j, 30 + 20 * i, 20, 20, hWnd, (HMENU) (21016 + 32 * i + 2 * j)    , hInst, NULL);
+                    rbutton[i][2 * j + 2] = CreateWindow(L"button", L"", WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON , 110 + 50 * j, 30 + 20 * i, 20, 20, hWnd, (HMENU) (21016 + 32 * i + 2 * j + 1), hInst, NULL);
                 }
                 //CheckRadioButton(hWnd, 21000 + 20 * i, 21010 + 20 * i + 9, 21000 + 20 * i);
-                CheckRadioButton(hWnd, 21000 + 20 * i, 21010 + 20 * i + 9, audioSetting[i] == -1 ? 21000 + 20 * i : 21010 + 20 * i + audioSetting[i]);
+                CheckRadioButton(hWnd, 21000 + 32 * i, 21016 + 32 * i + 15, audioSetting[i] == -1 ? 21000 + 32 * i : 21016 + 32 * i + audioSetting[i]);
             }
 
             // 레지스트리 읽기
@@ -550,18 +551,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             TextOut(hdc, 10, 90, L"ch 6,7", 6);
             TextOut(hdc, 20, 110, L"A2", 2);
             TextOut(hdc, 20, 130, L"A3", 2);
-            TextOut(hdc, 20, 150, L"B1", 2);
-            TextOut(hdc, 20, 170, L"B2", 2);
+            TextOut(hdc, 20, 150, L"A4", 2);
+            TextOut(hdc, 20, 170, L"A5", 2);
+            TextOut(hdc, 20, 190, L"B1", 2);
+            TextOut(hdc, 20, 210, L"B2", 2);
+            TextOut(hdc, 20, 230, L"B3", 2);
 
             TextOut(hdc, 62, 10, L"X", 1);
             TextOut(hdc, 100, 10, L"A1", 2);
             TextOut(hdc, 150, 10, L"A2", 2);
             TextOut(hdc, 200, 10, L"A3", 2);
-            TextOut(hdc, 250, 10, L"B1", 2);
-            TextOut(hdc, 300, 10, L"B2", 2);
+            TextOut(hdc, 250, 10, L"A4", 2);
+            TextOut(hdc, 300, 10, L"A5", 2);
+            TextOut(hdc, 350, 10, L"B1", 2);
+            TextOut(hdc, 400, 10, L"B2", 2);
+            TextOut(hdc, 450, 10, L"B3", 2);
 
             //sprintf_s(str, "%d", loadRegTray());
-            //TextOut(hdc, 220, 10, str, strlen(str));
+            //TextOut(hdc, 220, 10, wstr, wcslen(wstr));
+            //TextOut(hdc, 240, 10, L"asdf", wcslen(L"asdf"));
 
             EndPaint(hWnd, &ps);
         }
